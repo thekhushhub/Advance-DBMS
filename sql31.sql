@@ -1,0 +1,5 @@
+CREATE OR REPLACE PROCEDURE message IS
+BEGIN
+    DBMS_OUTPUT.PUT_LINE('This is Definition 1');
+END;
+/
