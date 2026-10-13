@@ -1,23 +1,43 @@
---example of invalid_Cursor exception
+SET SERVEROUTPUT ON;
 
-set serveroutput on
+DECLARE
+    CURSOR C1 IS
+        SELECT *
+        FROM EMP
+        WHERE DEPTNO = &DEPT_NO;
 
-declare
+    V_EMP EMP%ROWTYPE;
+    V_COUNT NUMBER := 0;
 
-cursor cr1 IS select * from booking where amount > 5000;
-b booking%ROWTYPE;
-begin
-open cr1;
-open cr1;
-loop
-fetch cr1 into b;
-exit when cr1%NOTFOUND;
-dbms_output.put_line('Customer Name:'||b.CUSTOMER_NAME||'
-DESTINATION:' ||b.DESTINATION||' Amount:'|| b.amount);
-end loop;
-close cr1;
+    NO_DEPT_FOUND EXCEPTION;
+
+BEGIN
+    OPEN C1;
+
+    LOOP
+        FETCH C1 INTO V_EMP;
+        EXIT WHEN C1%NOTFOUND;
+
+        INSERT INTO EMP_BACKUP
+        VALUES V_EMP;
+
+        V_COUNT := V_COUNT + 1;
+    END LOOP;
+
+    CLOSE C1;
+
+    IF V_COUNT = 0 THEN
+        RAISE NO_DEPT_FOUND;
+    ELSE
+        DBMS_OUTPUT.PUT_LINE(
+            V_COUNT || ' employee records inserted successfully.'
+        );
+    END IF;
+
 EXCEPTION
-WHEN CURSOR_ALREADY_OPEN THEN
-dbms_output.put_line('You opened cursor multiple times in program');
-end;
+    WHEN NO_DEPT_FOUND THEN
+        DBMS_OUTPUT.PUT_LINE(
+            'NO_DEPT_FOUND: No employees found for the given department.'
+        );
+END;
 /
